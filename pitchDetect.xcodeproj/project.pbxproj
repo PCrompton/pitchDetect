@@ -7,6 +7,8 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		960A95CF1D8B880D009B0373 /* Beethoven.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 960A95C31D8B880D009B0373 /* Beethoven.framework */; };
+		960A95D51D8B880D009B0373 /* Pitchy.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 960A95C91D8B880D009B0373 /* Pitchy.framework */; settings = {ATTRIBUTES = (Required, ); }; };
 		96CF69451D8B72C200905102 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 96CF69441D8B72C200905102 /* AppDelegate.swift */; };
 		96CF69471D8B72C200905102 /* ViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 96CF69461D8B72C200905102 /* ViewController.swift */; };
 		96CF694A1D8B72C200905102 /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 96CF69481D8B72C200905102 /* Main.storyboard */; };
@@ -34,6 +36,8 @@
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
+		960A95C31D8B880D009B0373 /* Beethoven.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Beethoven.framework; path = Carthage/Build/iOS/Beethoven.framework; sourceTree = "<group>"; };
+		960A95C91D8B880D009B0373 /* Pitchy.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Pitchy.framework; path = Carthage/Build/iOS/Pitchy.framework; sourceTree = "<group>"; };
 		96CF69411D8B72C200905102 /* pitchDetect.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = pitchDetect.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		96CF69441D8B72C200905102 /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
 		96CF69461D8B72C200905102 /* ViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ViewController.swift; sourceTree = "<group>"; };
@@ -54,6 +58,8 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				960A95CF1D8B880D009B0373 /* Beethoven.framework in Frameworks */,
+				960A95D51D8B880D009B0373 /* Pitchy.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -74,6 +80,15 @@
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
+		960A95C01D8B880C009B0373 /* Frameworks */ = {
+			isa = PBXGroup;
+			children = (
+				960A95C31D8B880D009B0373 /* Beethoven.framework */,
+				960A95C91D8B880D009B0373 /* Pitchy.framework */,
+			);
+			name = Frameworks;
+			sourceTree = "<group>";
+		};
 		96CF69381D8B72C200905102 = {
 			isa = PBXGroup;
 			children = (
@@ -81,6 +96,7 @@
 				96CF69581D8B72C300905102 /* pitchDetectTests */,
 				96CF69631D8B72C300905102 /* pitchDetectUITests */,
 				96CF69421D8B72C200905102 /* Products */,
+				960A95C01D8B880C009B0373 /* Frameworks */,
 			);
 			sourceTree = "<group>";
 		};
@@ -135,6 +151,7 @@
 				96CF693D1D8B72C200905102 /* Sources */,
 				96CF693E1D8B72C200905102 /* Frameworks */,
 				96CF693F1D8B72C200905102 /* Resources */,
+				960A95D91D8B8876009B0373 /* ShellScript */,
 			);
 			buildRules = (
 			);
@@ -194,17 +211,20 @@
 					96CF69401D8B72C200905102 = {
 						CreatedOnToolsVersion = 8.0;
 						DevelopmentTeam = K79BKV3T6H;
+						LastSwiftMigration = 0800;
 						ProvisioningStyle = Automatic;
 					};
 					96CF69541D8B72C300905102 = {
 						CreatedOnToolsVersion = 8.0;
 						DevelopmentTeam = K79BKV3T6H;
+						LastSwiftMigration = 0800;
 						ProvisioningStyle = Automatic;
 						TestTargetID = 96CF69401D8B72C200905102;
 					};
 					96CF695F1D8B72C300905102 = {
 						CreatedOnToolsVersion = 8.0;
 						DevelopmentTeam = K79BKV3T6H;
+						LastSwiftMigration = 0800;
 						ProvisioningStyle = Automatic;
 						TestTargetID = 96CF69401D8B72C200905102;
 					};
@@ -256,6 +276,24 @@
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 /* End PBXResourcesBuildPhase section */
+
+/* Begin PBXShellScriptBuildPhase section */
+		960A95D91D8B8876009B0373 /* ShellScript */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputPaths = (
+				"$(SRCROOT)/Carthage/Build/iOS/Beethoven.framework",
+				"$(SRCROOT)/Carthage/Build/iOS/Pitchy.framework",
+			);
+			outputPaths = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "/usr/local/bin/carthage copy-frameworks";
+		};
+/* End PBXShellScriptBuildPhase section */
 
 /* Begin PBXSourcesBuildPhase section */
 		96CF693D1D8B72C200905102 /* Sources */ = {
@@ -416,9 +454,13 @@
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				DEVELOPMENT_TEAM = K79BKV3T6H;
+				FRAMEWORK_SEARCH_PATHS = (
+					"$(inherited)",
+					"$(PROJECT_DIR)/Carthage/Build/iOS",
+				);
 				INFOPLIST_FILE = pitchDetect/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks";
-				PRODUCT_BUNDLE_IDENTIFIER = "Crompton-Apps.pitchDetect";
+				PRODUCT_BUNDLE_IDENTIFIER = "Crompton-Apps.pitchDetector";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_VERSION = 3.0;
 			};
@@ -429,9 +471,13 @@
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				DEVELOPMENT_TEAM = K79BKV3T6H;
+				FRAMEWORK_SEARCH_PATHS = (
+					"$(inherited)",
+					"$(PROJECT_DIR)/Carthage/Build/iOS",
+				);
 				INFOPLIST_FILE = pitchDetect/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks";
-				PRODUCT_BUNDLE_IDENTIFIER = "Crompton-Apps.pitchDetect";
+				PRODUCT_BUNDLE_IDENTIFIER = "Crompton-Apps.pitchDetector";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_VERSION = 3.0;
 			};
@@ -514,6 +560,7 @@
 				96CF696B1D8B72C300905102 /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
 		};
 		96CF696C1D8B72C300905102 /* Build configuration list for PBXNativeTarget "pitchDetectTests" */ = {
 			isa = XCConfigurationList;
@@ -522,6 +569,7 @@
 				96CF696E1D8B72C300905102 /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
 		};
 		96CF696F1D8B72C300905102 /* Build configuration list for PBXNativeTarget "pitchDetectUITests" */ = {
 			isa = XCConfigurationList;
@@ -530,6 +578,7 @@
 				96CF69711D8B72C300905102 /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
 		};
 /* End XCConfigurationList section */
 	};
