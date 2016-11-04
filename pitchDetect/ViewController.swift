@@ -12,20 +12,27 @@ import Pitchy
 import AVFoundation
 
 class ViewController: UIViewController, PitchEngineDelegate {
-
+    
     @IBOutlet weak var startButton: UIButton!
-    var pitchEngine: PitchEngine?
-    var noteToPlay: Note?
-    var lowest = try! Note(letter: .C, octave: 3)
-    var highest = try! Note(letter: .C, octave: 6)
+
     @IBOutlet weak var pitchLabel: UILabel!
     
+    var pitchEngine: PitchEngine?
+    var noteToPlay: Note?
+    var lowest = try! Note(letter: .C, octave: 1)
+    var highest = try! Note(letter: .C, octave: 7)
     var consecutivePitches = [Pitch]()
+    let consecutiveMax = 3
+    let bufferSize: AVAudioFrameCount = 4096
+    let estimationStragegy = EstimationStrategy.yin
+    let audioURL: URL? = nil
+    
     
     override func viewDidLoad() {
         super.viewDidLoad()
-        let config = Config(bufferSize: 4096, transformStrategy: .fft, estimationStrategy: .hps, audioURL: nil)
+        let config = Config(bufferSize: bufferSize, estimationStrategy: estimationStragegy)
         pitchEngine = PitchEngine(config: config, delegate: self)
+        pitchEngine?.levelThreshold = -30.0
     }
 
     @IBAction func StartButton(_ sender: UIButton) {
@@ -61,10 +68,12 @@ class ViewController: UIViewController, PitchEngineDelegate {
         return true
     }
     
-    func pitchEngineDidRecievePitch(_ pitchEngine: PitchEngine, pitch: Pitch) {
+    
+    // Mark PitchEngineDelegate functions
+    public func pitchEngineDidReceivePitch(_ pitchEngine: PitchEngine, pitch: Pitch) {
         let note = pitch.note
         print(note.string)
-        if consecutivePitches.count < 5 {
+        if consecutivePitches.count < consecutiveMax {
             consecutivePitches.append(pitch)
         } else {
             consecutivePitches.remove(at: 0)
@@ -72,6 +81,7 @@ class ViewController: UIViewController, PitchEngineDelegate {
             let isPitch = checkIfIsPitch(pitches: consecutivePitches)
             if isPitch {
                 pitchEngine.stop()
+                consecutivePitches.removeAll()
                 let alertController = UIAlertController(title: note.string, message: nil, preferredStyle: .alert)
                 let action = UIAlertAction(title: "Next", style: .default) {
                     (action) in
@@ -82,7 +92,7 @@ class ViewController: UIViewController, PitchEngineDelegate {
                 alertController.addAction(action)
                 print(pitch.note.string, pitch.note.index)
                 if note.index == noteToPlay!.index {
-                    alertController.message = "Congrates, you played \(note.string)!"
+                    alertController.message = "Congrates, you played \(note.string)"
                 } else {
                     alertController.message = "Sorry, that was not \(noteToPlay!.string)"
                     let action = UIAlertAction(title: "Try Again", style: .default) {
@@ -97,8 +107,13 @@ class ViewController: UIViewController, PitchEngineDelegate {
         }
     }
     
-    func pitchEngineDidRecieveError(_ pitchEngine: PitchEngine, error: Error) {
+    public func pitchEngineDidReceiveError(_ pitchEngine: PitchEngine, error: Error) {
         print(Error.self)
+    }
+    
+    public func pitchEngineWentBelowLevelThreshold(_ pitchEngine: PitchEngine) {
+        //print("PitchEngine went below threshhold")
+        return
     }
 
 }

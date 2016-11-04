@@ -3,34 +3,34 @@ import AVFoundation
 import Pitchy
 
 public protocol PitchEngineDelegate: class {
-  func pitchEngineDidRecievePitch(_ pitchEngine: PitchEngine, pitch: Pitch)
-  func pitchEngineDidRecieveError(_ pitchEngine: PitchEngine, error: Error)
+  func pitchEngineDidReceivePitch(_ pitchEngine: PitchEngine, pitch: Pitch)
+  func pitchEngineDidReceiveError(_ pitchEngine: PitchEngine, error: Error)
+  func pitchEngineWentBelowLevelThreshold(_ pitchEngine: PitchEngine)
 }
 
-open class PitchEngine {
+public enum PitchEngineError: Error {
+  case recordPermissionDenied
+}
 
-  public enum PitchEngineError: Error {
-    case recordPermissionDenied
-  }
+public class PitchEngine {
 
   public enum Mode {
     case record, playback
   }
 
-  open let bufferSize: AVAudioFrameCount
-  open var active = false
-  open weak var delegate: PitchEngineDelegate?
+  public let bufferSize: AVAudioFrameCount
+  public var active = false
+  public weak var delegate: PitchEngineDelegate?
 
-  fileprivate var transformer: Transformer
   fileprivate var estimator: Estimator
   fileprivate var signalTracker: SignalTracker
   fileprivate var queue: DispatchQueue
 
-  open var mode: Mode {
+  public var mode: Mode {
     return signalTracker is InputSignalTracker ? .record : .playback
   }
 
-  open var levelThreshold:Float? {
+  public var levelThreshold: Float? {
     get {
       return self.signalTracker.levelThreshold
     }
@@ -39,29 +39,30 @@ open class PitchEngine {
     }
   }
 
+  public var signalLevel: Float {
+    get { return signalTracker.averageLevel ?? 0.0 }
+  }
+
   // MARK: - Initialization
 
   public init(config: Config = Config(), delegate: PitchEngineDelegate? = nil) {
     bufferSize = config.bufferSize
-    transformer = TransformFactory.create(config.transformStrategy)
     estimator = EstimationFactory.create(config.estimationStrategy)
 
-    if let audioURL = config.audioURL {
-      signalTracker = OutputSignalTracker(audioURL: audioURL, bufferSize: bufferSize)
+    if let audioUrl = config.audioUrl {
+      signalTracker = OutputSignalTracker(audioUrl: audioUrl, bufferSize: bufferSize)
     } else {
       signalTracker = InputSignalTracker(bufferSize: bufferSize)
     }
 
     queue = DispatchQueue(label: "BeethovenQueue", attributes: [])
-
     signalTracker.delegate = self
-
     self.delegate = delegate
   }
 
   // MARK: - Processing
 
-  open func start() {
+  public func start() {
     guard mode == .playback else {
       activate()
       return
@@ -83,7 +84,7 @@ open class PitchEngine {
         guard let weakSelf = self else { return }
 
         guard granted else {
-          weakSelf.delegate?.pitchEngineDidRecieveError(weakSelf,
+          weakSelf.delegate?.pitchEngineDidReceiveError(weakSelf,
             error: PitchEngineError.recordPermissionDenied as Error)
           return
         }
@@ -97,7 +98,7 @@ open class PitchEngine {
     }
   }
 
-  open func stop() {
+  public func stop() {
     signalTracker.stop()
     active = false
   }
@@ -107,7 +108,7 @@ open class PitchEngine {
       try signalTracker.start()
       active = true
     } catch {
-      delegate?.pitchEngineDidRecieveError(self, error: error)
+      delegate?.pitchEngineDidReceiveError(self, error: error)
     }
   }
 }
@@ -116,26 +117,32 @@ open class PitchEngine {
 
 extension PitchEngine: SignalTrackerDelegate {
 
-  public func signalTracker(_ signalTracker: SignalTracker,
+  func signalTracker(_ signalTracker: SignalTracker,
     didReceiveBuffer buffer: AVAudioPCMBuffer, atTime time: AVAudioTime) {
       queue.async { [weak self] in
         guard let weakSelf = self else { return }
 
-        let transformedBuffer = weakSelf.transformer.transformBuffer(buffer)
-
         do {
-          let frequency = try weakSelf.estimator.estimateFrequency(Float(time.sampleRate),
+          let transformedBuffer = try weakSelf.estimator.transformer.transform(buffer: buffer)
+          let frequency = try weakSelf.estimator.estimateFrequency(
+            sampleRate: Float(time.sampleRate),
             buffer: transformedBuffer)
           let pitch = try Pitch(frequency: Double(frequency))
 
           DispatchQueue.main.async {
-            weakSelf.delegate?.pitchEngineDidRecievePitch(weakSelf, pitch: pitch)
+            weakSelf.delegate?.pitchEngineDidReceivePitch(weakSelf, pitch: pitch)
           }
         } catch {
           DispatchQueue.main.async {
-            weakSelf.delegate?.pitchEngineDidRecieveError(weakSelf, error: error)
+            weakSelf.delegate?.pitchEngineDidReceiveError(weakSelf, error: error)
           }
         }
+    }
+  }
+
+  func signalTrackerWentBelowLevelThreshold(_ signalTracker: SignalTracker) {
+    DispatchQueue.main.async {
+      self.delegate?.pitchEngineWentBelowLevelThreshold(self)
     }
   }
 }
